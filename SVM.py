@@ -37,7 +37,7 @@ text_clf = Pipeline([ ('clf', SGDClassifier(loss='hinge', penalty='l1',alpha=1e-
 text_clf = text_clf.fit(X, y)
 
 predicted = text_clf.predict(Xtest)
-print "Validation Model Accuracy %f" % np.mean(predicted == ytest)
+print "Validation Model Accuracy %f" % np.mean(predicted == ytest) # 92.
 
 
 #text_description_unigrams
@@ -49,3 +49,15 @@ text_clf = text_clf.fit(X_train, y_train)
 
 predicted = text_clf.predict(X_test)
 print "Validation Model Accuracy %f" % np.mean(predicted == y_test) # 68.21%
+
+#text_tag_unigrams
+X_train, y_train, X_test, y_test = load_svmlight_files(("train\\text_tag_unigrams.txt", "test\\text_tag_unigrams.txt"))
+
+text_clf = Pipeline([ ('clf', SGDClassifier(loss='hinge', penalty='l1',alpha=1e-6, n_iter=5, random_state=88)),])
+
+text_clf = text_clf.fit(X_train, y_train)
+
+predicted = text_clf.predict(X_test)
+print "Validation Model Accuracy %f" % np.mean(predicted == y_test) # 92.05%
+
+
