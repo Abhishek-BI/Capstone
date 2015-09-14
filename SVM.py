@@ -37,7 +37,7 @@ text_clf = Pipeline([ ('clf', SGDClassifier(loss='hinge', penalty='l1',alpha=1e-
 text_clf = text_clf.fit(X, y)
 
 predicted = text_clf.predict(Xtest)
-print "Validation Model Accuracy %f" % np.mean(predicted == ytest) # 92.
+print "Validation Model Accuracy %f" % np.mean(predicted == ytest) # 92.82%
 
 
 #text_description_unigrams
