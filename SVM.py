@@ -62,7 +62,7 @@ print "Validation Model Accuracy %f" % np.mean(predicted == y_test) # 92.05%
 
 
 #audio_mfcc
-X_train, y_train, X_test, y_test = load_svmlight_files(("train\\audio_mfcc.txt", "test\\audio_mfcc.txt"))
+X_train, y_train, X_test, y_test = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt"))
 
 text_clf = Pipeline([ ('clf', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-6, n_iter=5, random_state=88)),])
 
@@ -99,7 +99,7 @@ for file in glob.glob("vision*.gz"):
     predicted_test = svmClf.predict(X_test)
     test_acc = np.mean(predicted_test == y_test)        
     print "Test Model Accuracy %f" % test_acc
-    
+        
     predicted_val = svmClf.predict(X_val)
     val_acc = np.mean(predicted_val == y_val)     
     print "Validation Model Accuracy %f" % val_acc
@@ -111,19 +111,73 @@ for file in glob.glob("vision*.gz"):
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv("SVM_Accuracy_vision.csv")
 
+#==============================================================================
+from sklearn import decomposition
+import matplotlib.pyplot as plt
+
+pca = decomposition.PCA()
+
+pca.fit(X_train.toarray())
+
+plt.figure(1, figsize=(10, 10))
+plt.clf()
+plt.axes([.2, .2, .7, .7])
+plt.plot(pca.explained_variance_, linewidth=2)
+plt.axis('tight')   
+plt.xlabel('n_components')
+plt.ylabel('explained_variance_')
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+
+from sklearn.cross_validation import train_test_split
+from sklearn.linear_model import SGDClassifier, Perceptron
+from sklearn.linear_model import PassiveAggressiveClassifier
+
+heldout = [0.95, 0.90, 0.75, 0.50, 0.01]
+rounds = 20
 
 
 
+classifiers = [
+    ("SGD", SGDClassifier()),
+    ("ASGD", SGDClassifier(average=True)),
+    ("Perceptron", Perceptron()),
+    ("Passive-Aggressive I", PassiveAggressiveClassifier(loss='hinge',
+                                                         C=1.0)),
+    ("Passive-Aggressive II", PassiveAggressiveClassifier(loss='squared_hinge',
+                                                          C=1.0)),
+]
 
+for name, clf in classifiers:
+    rng = np.random.RandomState(42)
+    yy = []
+    for i in heldout:
+        yy_ = []
+        for r in range(rounds):
+            X_train, X_test, y_train, y_test = \
+                train_test_split(X, y, test_size=i, random_state=rng)
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test)
+            yy_.append(1 - np.mean(y_pred == y_test))
+        yy.append(np.mean(yy_))
+    plt.plot(xx, yy, label=name)
 
-    
+from sklearn.neighbors.nearest_centroid import NearestCentroid
+clf = NearestCentroid()
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+            
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+logreg = SVC(kernel='linear', C=1.0, probability=True,random_state=0)
 
-
-
-
-
-
-
+# we create an instance of Neighbours Classifier and fit the data.
+logreg.fit(X_train, y_train)
+y_pred = logreg.predict(X_test)
+np.mean(y_pred == y_test)
 
 
 
