@@ -13,7 +13,7 @@ from sklearn.mixture import GMM
 import pandas as pd
 
 from sklearn.datasets import load_svmlight_files
-
+os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
 
 X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
 np.unique(y_train)
@@ -53,23 +53,3 @@ for n_comp in [1,2,3,4]:
 
 data_df.to_csv("vision_cuboids_histogram_gmm_acc.csv")
 
-
-
-classifier0 = GMM(n_components=3,covariance_type='full', init_params='wc', n_iter=20)
-classifier0.fit(X_train[y_train==0])   
-classifier1 = GMM(n_components=3,covariance_type='full', init_params='wc', n_iter=20)
-classifier1.fit(X_train[y_train==1])  
-classifier2 = GMM(n_components=3,covariance_type='full', init_params='wc', n_iter=20)
-classifier2.fit(X_train[y_train==2])  
-
-z0 = classifier0.predict_proba(X_test)
-z1 = classifier1.predict_proba(X_test)
-z2 = classifier2.predict_proba(X_test)
-s0 = classifier0.score(X_test)
-s1 = classifier1.score(X_test)
-s2 = classifier2.score(X_test)
-
-n = np.vstack((a,s0,s1,s2))
-x = pd.DataFrame(n.T)
-p = x.idxmax(axis = 1)
-np.mean(y_test==p)
