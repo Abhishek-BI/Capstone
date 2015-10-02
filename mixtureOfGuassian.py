@@ -11,7 +11,7 @@ import numpy as np
 
 from sklearn.mixture import GMM
 import pandas as pd
-
+import os
 from sklearn.datasets import load_svmlight_files
 os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
 
