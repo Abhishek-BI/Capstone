@@ -61,5 +61,5 @@ def multiprocess(processes, X_train, y_train, X_test, y_test, X_val, y_val, comp
     return results
     
 results = []
-components = [1,2,3,4]
+components = [1,2,3]
 results = multiprocess(4, X_train, y_train, X_test, y_test, X_val, y_val, components)

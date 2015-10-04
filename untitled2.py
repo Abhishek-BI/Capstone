@@ -15,15 +15,17 @@ from sklearn.externals.six.moves import xrange
 from sklearn.mixture import GMM
 
 from sklearn.svm import LinearSVC
-X_new = LinearSVC(C=0.01, penalty="l1", dual=False).fit_transform(X_train, y_train)
+mod = LinearSVC(C=0.01, penalty="l1", dual=False)
+X_new = mod.fit_transform(X_train, y_train)
 X_new.shape
-
+new = mod.transform(X_test)
+ 
 from sklearn.feature_selection import VarianceThreshold
 sel = VarianceThreshold(threshold=0.0001)
 
 r = sel.fit_transform(X_train.todense())
 r.shape
-
+k = sel.transform(X_test)
 
 
 def make_ellipses(gmm, ax):

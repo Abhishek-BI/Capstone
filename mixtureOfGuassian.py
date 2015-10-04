@@ -11,13 +11,8 @@ import numpy as np
 
 from sklearn.mixture import GMM
 import pandas as pd
-import os
+
 from sklearn.datasets import load_svmlight_files
-
-import matplotlib.pyplot as plt
-
-os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
-
 
 
 X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
@@ -25,13 +20,13 @@ np.unique(y_train)
 
 
 data_df = pd.DataFrame()
-for n_comp in [4,5,6,7,8,9,10]:
+for n_comp in [1,2,3,4]:
     print "Number of Guassians per class: " + str(n_comp)
     s_train = np.array([None]*len(y_train))
     s_test = np.array([None]*len(y_test))
     s_val = np.array([None]*len(y_val))
     for cls in np.unique(y_train):
-        classifier = GMM(n_components=n_comp,covariance_type='full', init_params='wc', n_iter=50)
+        classifier = GMM(n_components=n_comp,covariance_type='full', init_params='wc', n_iter=20)
         classifier.fit(X_train.todense()[y_train==cls]) 
         print "trained classifier: " + str(cls)
         temp_train = classifier.score(X_train.todense())
@@ -56,19 +51,7 @@ for n_comp in [4,5,6,7,8,9,10]:
     temp = pd.DataFrame([[n_comp,acc_train,acc_test,acc_val]])        
     data_df = data_df.append(temp,ignore_index =True)
 
-data_df.columns = ['NumOfGuassians','train_Accuracy','test_Accuracy','validation_Accuracy']
 data_df.to_csv("vision_cuboids_histogram_gmm_acc.csv")
 
 
-plt.figure(figsize=(8,6))
-plt.gca().set_color_cycle(['red', 'green', 'blue'])
-
-plt.plot(data_df['NumOfGuassians'], data_df['train_Accuracy'])
-plt.plot(data_df['NumOfGuassians'], data_df['test_Accuracy'])
-plt.plot(data_df['NumOfGuassians'], data_df['validation_Accuracy'])
-
-
-plt.legend(['Training Accuracy', 'Test Accuracy', 'Validation Accuracy'], loc='upper left')
-
-plt.show()
 

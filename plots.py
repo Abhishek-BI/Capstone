@@ -42,7 +42,34 @@ for i in xrange(len(y_train)):
     ax.hist(X_train.todense()[:,8],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
     plt.show()
     
-    
-    
+    fig = plt.figure()
+    ax = fig.add_subplot(gs[0, 0])
+    numBins = 20
+    ax.hist(r[:,0],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[0, 1])
+    numBins = 20
+    ax.hist(r[:,1],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[0, 2])
+    numBins = 20
+    ax.hist(r[:,2],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[1, 0])
+    numBins = 20
+    ax.hist(r[:,3],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[1, 1])
+    numBins = 20
+    ax.hist(r[:,4],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[1, 2])
+    numBins = 20
+    ax.hist(r[:,5],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[2, 0])
+    numBins = 20
+    ax.hist(r[:,6],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[2, 1])
+    numBins = 20
+    ax.hist(r[:,7],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    ax = fig.add_subplot(gs[2, 2])
+    numBins = 20
+    ax.hist(r[:,8],numBins,range=[0.00, 0.02],color='green',alpha=0.8)
+    plt.show()
     
   
