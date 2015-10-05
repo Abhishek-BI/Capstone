@@ -44,9 +44,9 @@ def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
 
 def entropy(z):
     z = z.astype(float)
-    z_log = np.log(z)
+    z_log = np.log(z)/np.log(30)
     z_entropy = -z*z_log
-    return z_entropy.sum(1)
+    return z_entropy.sum(axis = 1)
 
 def prior(y):
     prior = []
@@ -143,11 +143,11 @@ def featureSelection(X_train,X_test,X_val,y_train,log,tech):
     return X_train_new, X_test_new , X_val_new
 
   
-def pCoverX(featureFamily):
-    os.chdir("C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\train")
-    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+def pCoverX(featureFamily,n_guass):
+    os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+    path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
     data_df = pd.DataFrame()
-    n_guass = 2
+    
     train_post_array = []
     test_post_array = []
     val_post_array = []
@@ -198,8 +198,8 @@ def pCoverX(featureFamily):
     return train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df
 
 def textpCoverX():
-    os.chdir("C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\train")
-    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+    path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
     data_df = pd.DataFrame()
     
     train_post_array = []
@@ -261,12 +261,13 @@ def textpCoverX():
 
 #=============================================== Main =================================================================
 
-#os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
-os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
+os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
+#os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
 X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_hist_motion_estimate.txt", "test\\vision_hist_motion_estimate.txt","validation\\vision_hist_motion_estimate.txt"))
 
 #================ First Level of Fusion - Audio ===============================
-train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio')
+n_guass =2
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv('Audio_preComb_Acc.csv',index=False)
 
@@ -287,7 +288,8 @@ audio_test_entropy = entropy(comb1_audio_test)
 audio_val_entropy = entropy(comb1_audio_val)
 
 #================ First Level of Fusion - Video ===============================
-train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('vision')
+n_guass =2
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('vision',n_guass)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv('Vision_preComb_Acc.csv',index=False)
 
