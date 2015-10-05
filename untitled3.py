@@ -123,7 +123,27 @@ def checkAccuracy(X,Y):
      print "Accuracy: " + str(acc)
      return acc, confusion_matrix(Y, pred)
 
-
+def featureSelection(X_train,X_test,X_val, log,tech):
+    if (tech == 'VarTh'):
+        sel = VarianceThreshold(threshold=0.0001)
+        X_train_new = sel.fit_transform(X_train.todense())
+        X_test_new = sel.transform(X_test.todense())
+        X_val_new = sel.transform(X_val.todense())
+        if (log):
+            X_train_new = np.log(X_train_new+1)
+            X_test_new = np.log(X_test_new+1)
+            X_val_new = np.log(X_val_new+1)
+    
+    if (tech == 'LinearSVC'):
+        mod = LinearSVC(C=0.01, penalty="l1", dual=False)
+        X_train_new = mod.fit_transform(X_train.todense(), y_train)
+        X_test_new = mod.transform(X_test.todense())
+        X_val_new = mod.transform(X_val.todense())
+        if (log):
+            X_train_new = np.log(X_train_new+1)
+            X_test_new = np.log(X_test_new+1)
+            X_val_new = np.log(X_val_new+1)
+    return X_train_new, X_test_new , X_val_new
 
 #======================================================================================================================    
 #os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
@@ -139,14 +159,7 @@ y_train = y_train[y_train!=31]
 y_test = y_test[y_test!=31]
 y_val = y_val[y_val!=31]
 #========================= Feature Selection using Variance Thresold =============================================================
-sel = VarianceThreshold(threshold=0.0001)
-
-X_train_new = sel.fit_transform(X_train.todense())
-X_test_new = sel.transform(X_test.todense())
-X_val_new = sel.transform(X_val.todense())
-X_train_new = np.log(X_train_new+1)
-X_test_new = np.log(X_test_new+1)
-X_val_new = np.log(X_val_new+1)
+X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val, log=True,tech = 'LinearSVC')
 
 #========================= Mixture of Guassian ============================================================
 #components = [5]
