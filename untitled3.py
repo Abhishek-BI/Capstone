@@ -6,21 +6,18 @@ Created on Sun Oct 04 10:37:29 2015
 """
 
 import numpy as np
-
-import matplotlib.pyplot as plt
-from sklearn.lda import LDA
-from sklearn.decomposition import PCA as sklearnPCA
+import glob, os
+import gzip
 from sklearn.mixture import GMM
 import pandas as pd
-import os
 from sklearn.datasets import load_svmlight_files
 from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plt
 from sklearn.svm import LinearSVC
-
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.linear_model import SGDClassifier
+from sklearn.pipeline import Pipeline
 
-
+# ========================================== Define Functions ================================================
 def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
     s_train = np.array([None]*len(y_train))
     s_test = np.array([None]*len(y_test))
@@ -123,7 +120,7 @@ def checkAccuracy(X,Y):
      print "Accuracy: " + str(acc)
      return acc, confusion_matrix(Y, pred)
 
-def featureSelection(X_train,X_test,X_val, log,tech):
+def featureSelection(X_train,X_test,X_val,y_train,log,tech):
     if (tech == 'VarTh'):
         sel = VarianceThreshold(threshold=0.0001)
         X_train_new = sel.fit_transform(X_train.todense())
@@ -145,61 +142,214 @@ def featureSelection(X_train,X_test,X_val, log,tech):
             X_val_new = np.log(X_val_new+1)
     return X_train_new, X_test_new , X_val_new
 
-#======================================================================================================================    
+  
+def pCoverX(featureFamily):
+    os.chdir("C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\train")
+    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    data_df = pd.DataFrame()
+    n_guass = 2
+    train_post_array = []
+    test_post_array = []
+    val_post_array = []
+    train_entropy_array = []
+    test_entropy_array = []
+    val_entropy_array = []
+    fileType = featureFamily+'*.gz'
+    for file in glob.glob(fileType):
+        print(file)
+        X_train, y_train, X_test, y_test,X_val, y_val = load_svmlight_files((gzip.open(path+"train\\"+file), gzip.open(path+"test\\"+file),gzip.open(path+"validation\\"+file)))    
+        #X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
+        X_train = X_train[y_train!=31]
+        X_test = X_test[y_test!=31]
+        X_val = X_val[y_val!=31]
+        y_train = y_train[y_train!=31]
+        y_test = y_test[y_test!=31]
+        y_val = y_val[y_val!=31]
+    #========================= Feature Selection using Variance Thresold =============================================================
+        X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val,y_train, log=True,tech = 'LinearSVC')
+    #========================= Mixture of Guassian ============================================================
+        train_prob,test_prob,val_prob = pXoverC(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val, n_guass)
+    #========================= Calculating Prior, Posterior and Entropy ============================================================
+        prr = prior(y_train)
+        train_post = posterior(train_prob,prr)
+        train_entropy = entropy(train_post)
+        
+        train_post_array.append(train_post)
+        train_entropy_array.append(train_entropy)
+    
+        test_post = posterior(test_prob,prr)
+        test_entropy = entropy(test_post)
+    
+        test_post_array.append(test_post)
+        test_entropy_array.append(test_entropy)
+        
+        val_post = posterior(val_prob,prr)
+        val_entropy = entropy(val_post)
+    
+        val_post_array.append(val_post)
+        val_entropy_array.append(val_entropy)
+        
+        train_acc,c_mat = checkAccuracy(train_post,y_train)
+        test_acc,c_mat = checkAccuracy(test_post,y_test)
+        val_acc,c_mat = checkAccuracy(val_post,y_val)
+        temp = pd.DataFrame([[file,train_acc,test_acc,val_acc]])        
+        data_df = data_df.append(temp,ignore_index =True)
+        
+    return train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df
+
+def textpCoverX():
+    os.chdir("C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\train")
+    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    data_df = pd.DataFrame()
+    
+    train_post_array = []
+    test_post_array = []
+    val_post_array = []
+    train_entropy_array = []
+    test_entropy_array = []
+    val_entropy_array = []
+    
+    for file in glob.glob("text*.gz"):
+        print(file)
+        X_train, y_train, X_test, y_test,X_val, y_val = load_svmlight_files((gzip.open(path+"train\\"+file), gzip.open(path+"test\\"+file),gzip.open(path+"validation\\"+file)))    
+            
+        X_train = X_train[y_train!=31]
+        X_test = X_test[y_test!=31]
+        X_val = X_val[y_val!=31]
+        y_train = y_train[y_train!=31]
+        y_test = y_test[y_test!=31]
+        y_val = y_val[y_val!=31]
+        
+        svmClf = Pipeline([ ('clf', SGDClassifier(loss='log', penalty='l1',alpha=1e-6, n_iter=10, random_state=88)),])
+        svmClf = svmClf.fit(X_train, y_train)
+        
+        predicted_train = svmClf.predict(X_train)
+        train_acc = np.mean(predicted_train == y_train)     
+        print "Train Model Accuracy %f" % train_acc    
+        train_post = pd.DataFrame(svmClf.predict_proba(X_train))
+        
+        predicted_test = svmClf.predict(X_test)
+        test_acc = np.mean(predicted_test == y_test)        
+        print "Test Model Accuracy %f" % test_acc
+        test_post = pd.DataFrame(svmClf.predict_proba(X_test))    
+        
+        predicted_val = svmClf.predict(X_val)
+        val_acc = np.mean(predicted_val == y_val)     
+        print "Validation Model Accuracy %f" % val_acc
+        val_post = pd.DataFrame(svmClf.predict_proba(X_val))    
+        
+        
+        train_entropy = entropy(train_post)
+        
+        train_post_array.append(train_post)
+        train_entropy_array.append(train_entropy)
+    
+        test_entropy = entropy(test_post)
+    
+        test_post_array.append(test_post)
+        test_entropy_array.append(test_entropy)
+        
+        val_entropy = entropy(val_post)
+    
+        val_post_array.append(val_post)
+        val_entropy_array.append(val_entropy)
+        
+        temp = pd.DataFrame([[file,train_acc,test_acc,val_acc]])        
+        data_df = data_df.append(temp,ignore_index =True)
+        
+    return train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df
+
+#=============================================== Main =================================================================
+
 #os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
 os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
+X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_hist_motion_estimate.txt", "test\\vision_hist_motion_estimate.txt","validation\\vision_hist_motion_estimate.txt"))
 
-X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
-np.unique(y_train)
-#========================= Removing Class 31 =============================================================
-X_train = X_train[y_train!=31]
-X_test = X_test[y_test!=31]
-X_val = X_val[y_val!=31]
-y_train = y_train[y_train!=31]
-y_test = y_test[y_test!=31]
-y_val = y_val[y_val!=31]
-#========================= Feature Selection using Variance Thresold =============================================================
-X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val, log=True,tech = 'LinearSVC')
+#================ First Level of Fusion - Audio ===============================
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio')
+data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
+data_df.to_csv('Audio_preComb_Acc.csv',index=False)
 
-#========================= Mixture of Guassian ============================================================
-#components = [5]
-#data = mixGuass(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val,components)
-n_guass = 2
-p1,p2,p3 = pXoverC(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val, n_guass)
-#========================= Calculating Prior, Posterior and Entropy ============================================================
-x = prior(y_train)
-z = posterior(p1,x)
-z_entropy = entropy(z)
-
-#z_pow = np.power(1-z_entropy,2)
-#z_mult = z.multiply(z_pow,0)
-posteriorsArray = [p1,p11]
-entropyArray = [z_entropy,z_entropy1]
 alpha=1
+comb1_audio_train = combiner(train_post_array,train_entropy_array,alpha)
+comb1_audio_test = combiner(test_post_array,test_entropy_array,alpha)
+comb1_audio_val = combiner(val_post_array,val_entropy_array,alpha)
 
-d = combiner(posteriorsArray,entropyArray,alpha)
-
-trainAcc, c_mat = checkAccuracy(d,y_train)
+audioTrainAcc, c_mat = checkAccuracy(comb1_audio_train,y_train)
+audioTestAcc, c_mat = checkAccuracy(comb1_audio_test,y_test)
+audioValAcc, c_mat = checkAccuracy(comb1_audio_val,y_val)
      
+audioComb1Acc = pd.DataFrame([[alpha,audioTrainAcc,audioTestAcc,audioValAcc]])
+audioComb1Acc.to_csv("Audio_combiner1_Acc.csv",index=False)
+
+audio_train_entropy = entropy(comb1_audio_train)
+audio_test_entropy = entropy(comb1_audio_test)
+audio_val_entropy = entropy(comb1_audio_val)
+
+#================ First Level of Fusion - Video ===============================
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('vision')
+data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
+data_df.to_csv('Vision_preComb_Acc.csv',index=False)
+
+alpha=1
+comb1_vision_train = combiner(train_post_array,train_entropy_array,alpha)
+comb1_vision_test = combiner(test_post_array,test_entropy_array,alpha)
+comb1_vision_val = combiner(val_post_array,val_entropy_array,alpha)
+
+visionTrainAcc, c_mat = checkAccuracy(comb1_vision_train,y_train)
+visionTestAcc, c_mat = checkAccuracy(comb1_vision_test,y_test)
+visionValAcc, c_mat = checkAccuracy(comb1_vision_val,y_val)
+     
+visionComb1Acc = pd.DataFrame([[alpha,visionTrainAcc,visionTestAcc,visionValAcc]])
+visionComb1Acc.to_csv("Vision_combiner1_Acc.csv",index=False)
+
+vision_train_entropy = entropy(comb1_vision_train)
+vision_test_entropy = entropy(comb1_vision_test)
+vision_val_entropy = entropy(comb1_vision_val)
+
+#================ First Level of Fusion - Text ===============================
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = textpCoverX()
+data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
+data_df.to_csv("Text_preComb_Acc.csv",index=False)
+
+alpha = 1
+comb1_text_train = combiner(train_post_array,train_entropy_array,alpha)
+comb1_text_test = combiner(test_post_array,test_entropy_array,alpha)
+comb1_text_val = combiner(val_post_array,val_entropy_array,alpha)
+
+textTrainAcc, c_mat = checkAccuracy(comb1_text_train,y_train)
+textTestAcc, c_mat = checkAccuracy(comb1_text_test,y_test)
+textValAcc, c_mat = checkAccuracy(comb1_text_val,y_val)
+     
+textComb1Acc = pd.DataFrame([[alpha,textTrainAcc,textTestAcc,textValAcc]])
+textComb1Acc.to_csv("Text_combiner1_Acc.csv",index=False)
+
+text_train_entropy = entropy(comb1_text_train)
+text_test_entropy = entropy(comb1_text_test)
+text_val_entropy = entropy(comb1_text_val)
 
 
+#================ Second Level of Fusion - Audio, Video & Text ===============================
+train_post_array = [comb1_audio_train,comb1_vision_train,comb1_text_train]
+train_entropy_array = [audio_train_entropy,vision_train_entropy,text_train_entropy]
 
+test_post_array = [comb1_audio_test,comb1_vision_test,comb1_text_test]
+test_entropy_array = [audio_test_entropy,vision_test_entropy,text_test_entropy]
 
+val_post_array = [comb1_audio_val,comb1_vision_val,comb1_text_val]
+val_entropy_array = [audio_val_entropy,vision_val_entropy,text_val_entropy]
 
+beta = 1
+comb2_train = combiner(train_post_array,train_entropy_array,beta)
+comb2_test = combiner(test_post_array,test_entropy_array,beta)
+comb2_val = combiner(val_post_array,val_entropy_array,beta)
 
+finalTrainAcc, c_mat = checkAccuracy(comb2_train,y_train)
+finalTestAcc, c_mat = checkAccuracy(comb2_test,y_test)
+finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Comb2Acc = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
+Comb2Acc.to_csv("Final_combiner2_Acc.csv",index=False)
+#=======================end ================================================================
 
 
