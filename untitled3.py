@@ -14,33 +14,12 @@ from sklearn.mixture import GMM
 import pandas as pd
 import os
 from sklearn.datasets import load_svmlight_files
-
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from sklearn.svm import LinearSVC
-os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
 
 from sklearn.feature_selection import VarianceThreshold
 
-
-X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
-np.unique(y_train)
-
-sel = VarianceThreshold(threshold=0.0001)
-
-X_train_new = sel.fit_transform(X_train.todense())
-
-X_test_new = sel.transform(X_test.todense())
-X_val_new = sel.transform(X_val.todense())
-X_train_new = np.log(X_train_new+1)
-X_test_new = np.log(X_test_new+1)
-X_val_new = np.log(X_val_new+1)
-
-
-
-components = [5]
-data = mixGuass(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val,components)
-n_guass = 2
-p1,p2,p3 = pXoverC(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val, n_guass)
 
 def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
     s_train = np.array([None]*len(y_train))
@@ -65,9 +44,6 @@ def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
     x_val = x_val.drop(x_val.columns[[0]],axis = 1)
     return x_train, x_test, x_val 
 
-x = prior(y_train)
-z = posterior(p1,x)
-z_entropy = entropy(z)
 
 def entropy(z):
     z = z.astype(float)
@@ -81,7 +57,6 @@ def prior(y):
         p = list(y).count(cls)/float(len(y))
         prior.append(round(p,5))
     return prior
-
 
 
 def posterior(pXoverC, prior):
@@ -125,3 +100,93 @@ def mixGuass(X_train, y_train, X_test, y_test, X_val, y_val,components):
     
     data_df.columns = ['NumOfGuassians','train_Accuracy','test_Accuracy','validation_Accuracy']
     return data_df
+
+
+def combiner(posteriorsArray,entropyArray,alpha):
+    zeros_data = np.zeros(shape = posteriorsArray[0].shape)
+    y = pd.DataFrame(zeros_data,columns = range(1,31))
+    for i in range(len(posteriorsArray)):
+        x = posteriorsArray[i].multiply(np.power(1-entropyArray[i],alpha),axis = 0)
+        y = y + x
+    
+    zeros_data = np.zeros(shape = entropyArray[0].shape)
+    z = pd.DataFrame(zeros_data,columns = range(1))
+    for i in range(len(entropyArray)):
+        z = z + pd.DataFrame(np.power(1-entropyArray[i],alpha))
+
+    return y.divide(z.ix[:,0],axis = 0)    
+    
+
+def checkAccuracy(X,Y):
+     pred = X.idxmax(axis = 1)
+     acc = np.mean(Y==pred)  
+     print "Accuracy: " + str(acc)
+     return acc, confusion_matrix(Y, pred)
+
+
+
+#======================================================================================================================    
+#os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
+os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
+
+X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
+np.unique(y_train)
+#========================= Removing Class 31 =============================================================
+X_train = X_train[y_train!=31]
+X_test = X_test[y_test!=31]
+X_val = X_val[y_val!=31]
+y_train = y_train[y_train!=31]
+y_test = y_test[y_test!=31]
+y_val = y_val[y_val!=31]
+#========================= Feature Selection using Variance Thresold =============================================================
+sel = VarianceThreshold(threshold=0.0001)
+
+X_train_new = sel.fit_transform(X_train.todense())
+X_test_new = sel.transform(X_test.todense())
+X_val_new = sel.transform(X_val.todense())
+X_train_new = np.log(X_train_new+1)
+X_test_new = np.log(X_test_new+1)
+X_val_new = np.log(X_val_new+1)
+
+#========================= Mixture of Guassian ============================================================
+#components = [5]
+#data = mixGuass(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val,components)
+n_guass = 2
+p1,p2,p3 = pXoverC(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val, n_guass)
+#========================= Calculating Prior, Posterior and Entropy ============================================================
+x = prior(y_train)
+z = posterior(p1,x)
+z_entropy = entropy(z)
+
+#z_pow = np.power(1-z_entropy,2)
+#z_mult = z.multiply(z_pow,0)
+posteriorsArray = [p1,p11]
+entropyArray = [z_entropy,z_entropy1]
+alpha=1
+
+d = combiner(posteriorsArray,entropyArray,alpha)
+
+trainAcc, c_mat = checkAccuracy(d,y_train)
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
