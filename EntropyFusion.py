@@ -170,7 +170,7 @@ def pCoverX(featureFamily,n_guass):
         X_test = X_test[y_test!=31]
 
         X_val, y_val = load_svmlight_file(gzip.open(path+"validation\\"+file))
-        X_val = X_test[y_val!=31]
+        X_val = X_val[y_val!=31]
                         
         y_train = y_train[y_train!=31]
         y_test = y_test[y_test!=31]
