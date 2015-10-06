@@ -212,7 +212,7 @@ def textpCoverX():
     #os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
     #path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
     path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
-    os.chdir(path)
+    os.chdir(path+'train')
     
     data_df = pd.DataFrame()
     
@@ -278,7 +278,9 @@ def textpCoverX():
 #os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
 os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
 X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_hist_motion_estimate.txt", "test\\vision_hist_motion_estimate.txt","validation\\vision_hist_motion_estimate.txt"))
-
+y_train = y_train[y_train!=31]
+y_test = y_test[y_test!=31]
+y_val = y_val[y_val!=31]
 #================ First Level of Fusion - Audio ===============================
 n_guass =2
 train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass,tech = 'LinearSVC',C= 0.5)
@@ -366,6 +368,27 @@ finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
 
 Comb2Acc = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
 Comb2Acc.to_csv("Final_combiner2_Acc.csv",index=False)
-#=======================end ================================================================
+#=======================Audio and Video fusion ================================================================
 
+
+train_post_array = [comb1_audio_train,comb1_vision_train]
+train_entropy_array = [audio_train_entropy,vision_train_entropy]
+
+test_post_array = [comb1_audio_test,comb1_vision_test]
+test_entropy_array = [audio_test_entropy,vision_test_entropy]
+
+val_post_array = [comb1_audio_val,comb1_vision_val]
+val_entropy_array = [audio_val_entropy,vision_val_entropy]
+
+beta = 1
+comb2_train = combiner(train_post_array,train_entropy_array,beta)
+comb2_test = combiner(test_post_array,test_entropy_array,beta)
+comb2_val = combiner(val_post_array,val_entropy_array,beta)
+
+finalTrainAcc, c_mat = checkAccuracy(comb2_train,y_train)
+finalTestAcc, c_mat = checkAccuracy(comb2_test,y_test)
+finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
+
+Comb2Acc = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
+Comb2Acc.to_csv("Final_combiner2_Acc.csv",index=False)
 

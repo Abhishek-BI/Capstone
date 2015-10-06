@@ -32,3 +32,13 @@ p11,p12,p13 = pXoverC(X_train_new1, y_train1, X_test_new1, y_test1, X_val_new1, 
 x1 = prior(y_train1)
 z1 = posterior(p11,x1)
 z_entropy1 = entropy(z1)
+
+file ='audio_sai_boxes.txt.gz'
+X_train, y_train = load_svmlight_file(gzip.open(path+"train\\"+file))
+X_train = X_train[y_train!=31]
+
+X_test, y_test = load_svmlight_file(gzip.open(path+"test\\"+file))
+X_test = X_test[y_test!=31]
+
+X_val, y_val = load_svmlight_file(gzip.open(path+"validation\\"+file))
+X_val = X_test[y_val!=31]
