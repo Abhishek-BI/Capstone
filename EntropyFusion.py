@@ -121,7 +121,7 @@ def checkAccuracy(X,Y):
      print "Accuracy: " + str(acc)
      return acc, confusion_matrix(Y, pred)
 
-def featureSelection(X_train,X_test,X_val,y_train,log,tech):
+def featureSelection(X_train,X_test,X_val,y_train,log,tech,C):
     if (tech == 'VarTh'):
         sel = VarianceThreshold(threshold=0.0001)
         X_train_new = sel.fit_transform(X_train.todense())
@@ -133,7 +133,7 @@ def featureSelection(X_train,X_test,X_val,y_train,log,tech):
             X_val_new = np.log(X_val_new+1)
     
     if (tech == 'LinearSVC'):
-        mod = LinearSVC(C=0.01, penalty="l1", dual=False)
+        mod = LinearSVC(C=C, penalty="l1", dual=False)
         X_train_new = mod.fit_transform(X_train.todense(), y_train)
         X_test_new = mod.transform(X_test.todense())
         X_val_new = mod.transform(X_val.todense())
@@ -144,7 +144,7 @@ def featureSelection(X_train,X_test,X_val,y_train,log,tech):
     return X_train_new, X_test_new , X_val_new
 
   
-def pCoverX(featureFamily,n_guass):
+def pCoverX(featureFamily,n_guass,tech,C):
     #os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
     #path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
     path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
@@ -160,7 +160,7 @@ def pCoverX(featureFamily,n_guass):
     val_entropy_array = []
     fileType = featureFamily+'*.gz'
     for file in glob.glob(fileType):
-        print(file)
+        print file
         #X_train, y_train, X_test, y_test,X_val, y_val = load_svmlight_files((gzip.open(path+"train\\"+file), gzip.open(path+"test\\"+file),gzip.open(path+"validation\\"+file)))    
         #X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
         X_train, y_train = load_svmlight_file(gzip.open(path+"train\\"+file))
@@ -175,9 +175,9 @@ def pCoverX(featureFamily,n_guass):
         y_train = y_train[y_train!=31]
         y_test = y_test[y_test!=31]
         y_val = y_val[y_val!=31]
-        
+        print "File Read"
     #========================= Feature Selection using Variance Thresold =============================================================
-        X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val,y_train, log=True,tech = 'LinearSVC')
+        X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val,y_train, log=True,tech = tech,C=C)
     #========================= Mixture of Guassian ============================================================
         train_prob,test_prob,val_prob = pXoverC(X_train_new, y_train, X_test_new, y_test, X_val_new, y_val, n_guass)
     #========================= Calculating Prior, Posterior and Entropy ============================================================
@@ -281,7 +281,7 @@ X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vi
 
 #================ First Level of Fusion - Audio ===============================
 n_guass =2
-train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass)
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass,tech = 'LinearSVC',C= 0.5)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv('Audio_preComb_Acc.csv',index=False)
 
@@ -303,7 +303,7 @@ audio_val_entropy = entropy(comb1_audio_val)
 
 #================ First Level of Fusion - Video ===============================
 n_guass =2
-train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('vision',n_guass)
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('vision',n_guass,tech = 'LinearSVC',C=0.5)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv('Vision_preComb_Acc.csv',index=False)
 
