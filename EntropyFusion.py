@@ -11,6 +11,7 @@ import gzip
 from sklearn.mixture import GMM
 import pandas as pd
 from sklearn.datasets import load_svmlight_files
+from sklearn.datasets import load_svmlight_file
 from sklearn.metrics import confusion_matrix
 from sklearn.svm import LinearSVC
 from sklearn.feature_selection import VarianceThreshold
@@ -144,8 +145,11 @@ def featureSelection(X_train,X_test,X_val,y_train,log,tech):
 
   
 def pCoverX(featureFamily,n_guass):
-    os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
-    path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
+    #os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+    #path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
+    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    os.chdir(path+'train')    
+    
     data_df = pd.DataFrame()
     
     train_post_array = []
@@ -157,14 +161,21 @@ def pCoverX(featureFamily,n_guass):
     fileType = featureFamily+'*.gz'
     for file in glob.glob(fileType):
         print(file)
-        X_train, y_train, X_test, y_test,X_val, y_val = load_svmlight_files((gzip.open(path+"train\\"+file), gzip.open(path+"test\\"+file),gzip.open(path+"validation\\"+file)))    
+        #X_train, y_train, X_test, y_test,X_val, y_val = load_svmlight_files((gzip.open(path+"train\\"+file), gzip.open(path+"test\\"+file),gzip.open(path+"validation\\"+file)))    
         #X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_cuboids_histogram.txt", "test\\vision_cuboids_histogram.txt","validation\\vision_cuboids_histogram.txt"))
+        X_train, y_train = load_svmlight_file(gzip.open(path+"train\\"+file))
         X_train = X_train[y_train!=31]
+
+        X_test, y_test = load_svmlight_file(gzip.open(path+"test\\"+file))
         X_test = X_test[y_test!=31]
-        X_val = X_val[y_val!=31]
+
+        X_val, y_val = load_svmlight_file(gzip.open(path+"validation\\"+file))
+        X_val = X_test[y_val!=31]
+                        
         y_train = y_train[y_train!=31]
         y_test = y_test[y_test!=31]
         y_val = y_val[y_val!=31]
+        
     #========================= Feature Selection using Variance Thresold =============================================================
         X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val,y_train, log=True,tech = 'LinearSVC')
     #========================= Mixture of Guassian ============================================================
@@ -198,8 +209,11 @@ def pCoverX(featureFamily,n_guass):
     return train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df
 
 def textpCoverX():
-    os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
-    path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
+    #os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+    #path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
+    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    os.chdir(path)
+    
     data_df = pd.DataFrame()
     
     train_post_array = []
@@ -261,8 +275,8 @@ def textpCoverX():
 
 #=============================================== Main =================================================================
 
-os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
-#os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
+#os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
+os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
 X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_hist_motion_estimate.txt", "test\\vision_hist_motion_estimate.txt","validation\\vision_hist_motion_estimate.txt"))
 
 #================ First Level of Fusion - Audio ===============================
