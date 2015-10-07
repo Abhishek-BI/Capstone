@@ -282,45 +282,50 @@ y_train = y_train[y_train!=31]
 y_test = y_test[y_test!=31]
 y_val = y_val[y_val!=31]
 #================ First Level of Fusion - Audio ===============================
-n_guass =2
+n_guass =5
 train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass,tech = 'LinearSVC',C= 0.5)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
-data_df.to_csv('Audio_preComb_Acc.csv',index=False)
+data_df.to_csv('Audio_preComb_Acc07.csv',index=False)
 
-alpha=1
-comb1_audio_train = combiner(train_post_array,train_entropy_array,alpha)
-comb1_audio_test = combiner(test_post_array,test_entropy_array,alpha)
-comb1_audio_val = combiner(val_post_array,val_entropy_array,alpha)
+audioComb1Acc = pd.DataFrame()
+for alpha in [1,2,3,4,5]:
+    comb1_audio_train = combiner(train_post_array,train_entropy_array,alpha)
+    comb1_audio_test = combiner(test_post_array,test_entropy_array,alpha)
+    comb1_audio_val = combiner(val_post_array,val_entropy_array,alpha)
 
-audioTrainAcc, c_mat = checkAccuracy(comb1_audio_train,y_train)
-audioTestAcc, c_mat = checkAccuracy(comb1_audio_test,y_test)
-audioValAcc, c_mat = checkAccuracy(comb1_audio_val,y_val)
+    audioTrainAcc, c_mat = checkAccuracy(comb1_audio_train,y_train)
+    audioTestAcc, c_mat = checkAccuracy(comb1_audio_test,y_test)
+    audioValAcc, c_mat = checkAccuracy(comb1_audio_val,y_val)
      
-audioComb1Acc = pd.DataFrame([[alpha,audioTrainAcc,audioTestAcc,audioValAcc]])
-audioComb1Acc.to_csv("Audio_combiner1_Acc.csv",index=False)
-
+    temp = pd.DataFrame([[alpha,audioTrainAcc,audioTestAcc,audioValAcc]]) 
+    audioComb1Acc = audioComb1Acc.append(temp)
+    
+audioComb1Acc.columns = ['alpha','train Accuracy','test Accuracy','validation Accuracy']
+audioComb1Acc.to_csv("Audio_combiner1_Acc07.csv",index=False)
 audio_train_entropy = entropy(comb1_audio_train)
 audio_test_entropy = entropy(comb1_audio_test)
 audio_val_entropy = entropy(comb1_audio_val)
 
 #================ First Level of Fusion - Video ===============================
-n_guass =2
+n_guass = 5
 train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('vision',n_guass,tech = 'LinearSVC',C=0.5)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
-data_df.to_csv('Vision_preComb_Acc.csv',index=False)
-
-alpha=1
-comb1_vision_train = combiner(train_post_array,train_entropy_array,alpha)
-comb1_vision_test = combiner(test_post_array,test_entropy_array,alpha)
-comb1_vision_val = combiner(val_post_array,val_entropy_array,alpha)
-
-visionTrainAcc, c_mat = checkAccuracy(comb1_vision_train,y_train)
-visionTestAcc, c_mat = checkAccuracy(comb1_vision_test,y_test)
-visionValAcc, c_mat = checkAccuracy(comb1_vision_val,y_val)
-     
-visionComb1Acc = pd.DataFrame([[alpha,visionTrainAcc,visionTestAcc,visionValAcc]])
-visionComb1Acc.to_csv("Vision_combiner1_Acc.csv",index=False)
-
+data_df.to_csv('Vision_preComb_Acc07.csv',index=False)
+visionComb1Acc  = pd.DataFrame()
+for alpha in [1,2,3,4,5]:
+    comb1_vision_train = combiner(train_post_array,train_entropy_array,alpha)
+    comb1_vision_test = combiner(test_post_array,test_entropy_array,alpha)
+    comb1_vision_val = combiner(val_post_array,val_entropy_array,alpha)
+    
+    visionTrainAcc, c_mat = checkAccuracy(comb1_vision_train,y_train)
+    visionTestAcc, c_mat = checkAccuracy(comb1_vision_test,y_test)
+    visionValAcc, c_mat = checkAccuracy(comb1_vision_val,y_val)
+         
+    temp = pd.DataFrame([[alpha,visionTrainAcc,visionTestAcc,visionValAcc]])
+    visionComb1Acc = visionComb1Acc.append(temp,ignore_index =True)    
+    
+visionComb1Acc.columns = ['alpha','train Accuracy','test Accuracy','validation Accuracy']
+visionComb1Acc.to_csv("Vision_combiner1_Acc07.csv",index=False)
 vision_train_entropy = entropy(comb1_vision_train)
 vision_test_entropy = entropy(comb1_vision_test)
 vision_val_entropy = entropy(comb1_vision_val)
@@ -330,23 +335,52 @@ train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv("Text_preComb_Acc.csv",index=False)
 
-alpha = 1
-comb1_text_train = combiner(train_post_array,train_entropy_array,alpha)
-comb1_text_test = combiner(test_post_array,test_entropy_array,alpha)
-comb1_text_val = combiner(val_post_array,val_entropy_array,alpha)
-
-textTrainAcc, c_mat = checkAccuracy(comb1_text_train,y_train)
-textTestAcc, c_mat = checkAccuracy(comb1_text_test,y_test)
-textValAcc, c_mat = checkAccuracy(comb1_text_val,y_val)
-     
-textComb1Acc = pd.DataFrame([[alpha,textTrainAcc,textTestAcc,textValAcc]])
+textComb1Acc = pd.DataFrame()
+for alpha in [1,2,3,4,5]:
+    comb1_text_train = combiner(train_post_array,train_entropy_array,alpha)
+    comb1_text_test = combiner(test_post_array,test_entropy_array,alpha)
+    comb1_text_val = combiner(val_post_array,val_entropy_array,alpha)
+    
+    textTrainAcc, c_mat = checkAccuracy(comb1_text_train,y_train)
+    textTestAcc, c_mat = checkAccuracy(comb1_text_test,y_test)
+    textValAcc, c_mat = checkAccuracy(comb1_text_val,y_val)
+         
+    temp = pd.DataFrame([[alpha,textTrainAcc,textTestAcc,textValAcc]])
+    textComb1Acc = textComb1Acc.append(temp,ignore_index =True)    
+    
+textComb1Acc.columns = ['alpha','train Accuracy','test Accuracy','validation Accuracy']
 textComb1Acc.to_csv("Text_combiner1_Acc.csv",index=False)
-
 text_train_entropy = entropy(comb1_text_train)
 text_test_entropy = entropy(comb1_text_test)
 text_val_entropy = entropy(comb1_text_val)
 
+#=======================Second Level of Audio and Video fusion ================================================================
+train_post_array = [comb1_audio_train,comb1_vision_train]
+train_entropy_array = [audio_train_entropy,vision_train_entropy]
 
+test_post_array = [comb1_audio_test,comb1_vision_test]
+test_entropy_array = [audio_test_entropy,vision_test_entropy]
+
+val_post_array = [comb1_audio_val,comb1_vision_val]
+val_entropy_array = [audio_val_entropy,vision_val_entropy]
+
+Comb2Acc = pd.DataFrame()
+for beta in [1,2,3,4,5]:
+    comb2_train = combiner(train_post_array,train_entropy_array,beta)
+    comb2_test = combiner(test_post_array,test_entropy_array,beta)
+    comb2_val = combiner(val_post_array,val_entropy_array,beta)
+    
+    finalTrainAcc, c_mat = checkAccuracy(comb2_train,y_train)
+    finalTestAcc, c_mat = checkAccuracy(comb2_test,y_test)
+    finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
+    
+    temp = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
+    Comb2Acc = Comb2Acc.append(temp,ignore_index =True)
+
+Comb2Acc.columns = ['beta','train Accuracy','test Accuracy','validation Accuracy']
+Comb2Acc.to_csv("Final_combiner2_Acc07.csv",index=False)
+
+#=============================================================================================
 #================ Second Level of Fusion - Audio, Video & Text ===============================
 train_post_array = [comb1_audio_train,comb1_vision_train,comb1_text_train]
 train_entropy_array = [audio_train_entropy,vision_train_entropy,text_train_entropy]
@@ -357,38 +391,18 @@ test_entropy_array = [audio_test_entropy,vision_test_entropy,text_test_entropy]
 val_post_array = [comb1_audio_val,comb1_vision_val,comb1_text_val]
 val_entropy_array = [audio_val_entropy,vision_val_entropy,text_val_entropy]
 
-beta = 1
-comb2_train = combiner(train_post_array,train_entropy_array,beta)
-comb2_test = combiner(test_post_array,test_entropy_array,beta)
-comb2_val = combiner(val_post_array,val_entropy_array,beta)
+Comb2Acc = pd.DataFrame()
+for beta in [1,2,3,4,5]:
+    comb2_train = combiner(train_post_array,train_entropy_array,beta)
+    comb2_test = combiner(test_post_array,test_entropy_array,beta)
+    comb2_val = combiner(val_post_array,val_entropy_array,beta)
+    
+    finalTrainAcc, c_mat = checkAccuracy(comb2_train,y_train)
+    finalTestAcc, c_mat = checkAccuracy(comb2_test,y_test)
+    finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
+    
+    temp = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
+    Comb2Acc = Comb2Acc.append(temp,ignore_index =True)
 
-finalTrainAcc, c_mat = checkAccuracy(comb2_train,y_train)
-finalTestAcc, c_mat = checkAccuracy(comb2_test,y_test)
-finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
-
-Comb2Acc = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
-Comb2Acc.to_csv("Final_combiner2_Acc.csv",index=False)
-#=======================Audio and Video fusion ================================================================
-
-
-train_post_array = [comb1_audio_train,comb1_vision_train]
-train_entropy_array = [audio_train_entropy,vision_train_entropy]
-
-test_post_array = [comb1_audio_test,comb1_vision_test]
-test_entropy_array = [audio_test_entropy,vision_test_entropy]
-
-val_post_array = [comb1_audio_val,comb1_vision_val]
-val_entropy_array = [audio_val_entropy,vision_val_entropy]
-
-beta = 1
-comb2_train = combiner(train_post_array,train_entropy_array,beta)
-comb2_test = combiner(test_post_array,test_entropy_array,beta)
-comb2_val = combiner(val_post_array,val_entropy_array,beta)
-
-finalTrainAcc, c_mat = checkAccuracy(comb2_train,y_train)
-finalTestAcc, c_mat = checkAccuracy(comb2_test,y_test)
-finalValAcc, c_mat = checkAccuracy(comb2_val,y_val)
-
-Comb2Acc = pd.DataFrame([[beta,finalTrainAcc,finalTestAcc,finalValAcc]])
-Comb2Acc.to_csv("Final_combiner2_Acc.csv",index=False)
-
+Comb2Acc.columns = ['beta','train Accuracy','test Accuracy','validation Accuracy']
+Comb2Acc.to_csv("Final_combiner2_Acc07.csv",index=False)
