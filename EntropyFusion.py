@@ -17,6 +17,7 @@ from sklearn.svm import LinearSVC
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
 
 # ========================================== Define Functions ================================================
 def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
@@ -273,6 +274,25 @@ def textpCoverX():
         
     return train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df
 
+
+def plotAccuracy(fileName):
+    data = pd.read_csv(fileName)
+    plt.figure(figsize=(9,7))
+    if (data.columns[0] != 'filename'):
+        for i in range(1,len(data.columns)):
+            plt.plot(data[data.columns[0]],data[data.columns[i]])
+    else:
+        x = range(len(data))
+        plt.xticks(x,data[data.columns[0]],rotation='vertical')
+        for i in range(1,len(data.columns)):
+            plt.plot(x,data[data.columns[i]])
+        
+    plt.legend(data.columns[1:], loc='upper left')
+    plt.xlabel(data.columns[0])
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy plot for ' + fileName)
+    plt.show()
+
 #=============================================== Main =================================================================
 
 #os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
@@ -406,3 +426,17 @@ for beta in [1,2,3,4,5]:
 
 Comb2Acc.columns = ['beta','train Accuracy','test Accuracy','validation Accuracy']
 Comb2Acc.to_csv("Final_combiner2_Acc07.csv",index=False)
+
+#==============================Plots ==========================================
+plotAccuracy('Audio_preComb_Acc07.csv')
+plotAccuracy('Audio_combiner1_Acc07.csv')
+plotAccuracy('Vision_preComb_Acc07.csv')
+plotAccuracy('Vision_combiner1_Acc07.csv')
+plotAccuracy('Final_combiner2_Acc07.csv')
+
+
+
+
+
+
+
