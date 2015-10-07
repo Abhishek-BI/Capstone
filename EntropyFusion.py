@@ -18,7 +18,7 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt
-
+from sklearn.utils.extmath import logsumexp
 # ========================================== Define Functions ================================================
 def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
     s_train = np.array([None]*len(y_train))
@@ -28,12 +28,12 @@ def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
         classifier = GMM(n_components=n_guass,covariance_type='full', init_params='wc', n_iter=50)
         classifier.fit(X_train[y_train==cls]) 
         print "trained classifier: " + str(cls)
-        temp_train = classifier.predict_proba(X_train)
-        s_train = np.vstack((s_train, (classifier.weights_*temp_train).sum(axis =1)))
-        temp_test = classifier.predict_proba(X_test)
-        s_test = np.vstack((s_test, (classifier.weights_*temp_test).sum(axis =1)))
-        temp_val = classifier.predict_proba(X_val)
-        s_val = np.vstack((s_val, (classifier.weights_*temp_val).sum(axis =1)))
+        temp_train = classifier.score(X_train)
+        s_train = np.vstack((s_train, temp_train))
+        temp_test = classifier.score(X_test)
+        s_test = np.vstack((s_test, temp_test))
+        temp_val = classifier.score(X_val)
+        s_val = np.vstack((s_val, temp_val))
         
         x_train = pd.DataFrame(s_train.T)
         x_test = pd.DataFrame(s_test.T)
@@ -59,9 +59,13 @@ def prior(y):
 
 
 def posterior(pXoverC, prior):
-    x = pXoverC*prior
-    x['sum'] = x.sum(axis=1)
-    z = x.div(x['sum'],axis = 0).drop('sum',1)
+    #x = pXoverC*prior
+    #x['sum'] = x.sum(axis=1)
+    #z = x.div(x['sum'],axis = 0).drop('sum',1)
+    x = pXoverC + np.log(prior)
+    x = x.astype(float)
+    x['logsum'] = logsumexp(d = x.as_matrix(),axis = 1)
+    z = np.exp(x.subtract(x['logsum'],axis=0).drop('logsum',1))
     return z
 
 def mixGuass(X_train, y_train, X_test, y_test, X_val, y_val,components):
@@ -146,10 +150,10 @@ def featureSelection(X_train,X_test,X_val,y_train,log,tech,C):
 
   
 def pCoverX(featureFamily,n_guass,tech,C):
-    #os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
-    #path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
-    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
-    os.chdir(path+'train')    
+    os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+    path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
+    #path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    #os.chdir(path+'train')    
     
     data_df = pd.DataFrame()
     
@@ -210,10 +214,10 @@ def pCoverX(featureFamily,n_guass,tech,C):
     return train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df
 
 def textpCoverX():
-    #os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
-    #path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
-    path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
-    os.chdir(path+'train')
+    os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+    path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
+    #path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+    #os.chdir(path+'train')
     
     data_df = pd.DataFrame()
     
@@ -295,15 +299,15 @@ def plotAccuracy(fileName):
 
 #=============================================== Main =================================================================
 
-#os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
-os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
+os.chdir("F:\Analytics\ISB Study\Capstone\dir_data\dir_data")
+#os.chdir("C:\Users\Vaibhav\Desktop\dir_data\dir_data")
 X_train, y_train, X_test, y_test, X_val, y_val = load_svmlight_files(("train\\vision_hist_motion_estimate.txt", "test\\vision_hist_motion_estimate.txt","validation\\vision_hist_motion_estimate.txt"))
 y_train = y_train[y_train!=31]
 y_test = y_test[y_test!=31]
 y_val = y_val[y_val!=31]
 #================ First Level of Fusion - Audio ===============================
-n_guass =5
-train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass,tech = 'LinearSVC',C= 0.5)
+n_guass =2
+train_post_array,test_post_array,val_post_array,train_entropy_array,test_entropy_array,val_entropy_array,data_df = pCoverX('audio',n_guass,tech = 'VarTh',C= 0.5)
 data_df.columns = ['filename','train Accuracy','test Accuracy','validation Accuracy']
 data_df.to_csv('Audio_preComb_Acc07.csv',index=False)
 
