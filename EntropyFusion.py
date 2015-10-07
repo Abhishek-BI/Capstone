@@ -64,7 +64,7 @@ def posterior(pXoverC, prior):
     #z = x.div(x['sum'],axis = 0).drop('sum',1)
     x = pXoverC + np.log(prior)
     x = x.astype(float)
-    x['logsum'] = logsumexp(d = x.as_matrix(),axis = 1)
+    x['logsum'] = logsumexp(x.as_matrix(),axis = 1)
     z = np.exp(x.subtract(x['logsum'],axis=0).drop('logsum',1))
     return z
 
