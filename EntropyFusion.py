@@ -442,11 +442,11 @@ Comb2Acc.columns = ['beta','train Accuracy','test Accuracy','validation Accuracy
 Comb2Acc.to_csv("Final_combiner2_Acc07.csv",index=False)
 
 #==============================Plots ==========================================
-plotAccuracy('Audio_preComb_Acc08.csv')
-plotAccuracy('Audio_combiner1_Acc08.csv')
+plotAccuracy('Audio_preComb_Acc0801.csv')
+plotAccuracy('Audio_combiner1_Acc0801.csv')
 plotAccuracy('Vision_preComb_Acc0801.csv')
 plotAccuracy('Vision_combiner1_Acc0801.csv')
-plotAccuracy('Final_combiner2_Acc08.csv')
+plotAccuracy('Final_combiner2_Acc0801.csv')
 
 
 
