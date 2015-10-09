@@ -13,6 +13,8 @@ import gzip
 from sklearn.datasets import load_svmlight_file
 from sklearn.mixture import GMM
 import matplotlib.pyplot as plt
+from sklearn.svm import LinearSVC
+from sklearn.feature_selection import VarianceThreshold
 
 def maxCount(z):
     return z.value_counts().idxmax()
@@ -68,6 +70,28 @@ def pXoverC(X_train_two, y_train_two, X_test_two, y_test_two, X_val_two, y_val_t
         
     return acc_train_two,acc_test_two,acc_val_two,pred_train,pred_test,pred_val
 
+def featureSelection(X_train,X_test,X_val,y_train,log,tech,C):
+    if (tech == 'VarTh'):
+        sel = VarianceThreshold(threshold=0.01)
+        X_train_new = sel.fit_transform(X_train.todense())
+        X_test_new = sel.transform(X_test.todense())
+        X_val_new = sel.transform(X_val.todense())
+        if (log):
+            X_train_new = np.log(X_train_new+1)
+            X_test_new = np.log(X_test_new+1)
+            X_val_new = np.log(X_val_new+1)
+    
+    if (tech == 'LinearSVC'):
+        mod = LinearSVC(C=C, penalty="l1", dual=False)
+        X_train_new = mod.fit_transform(X_train.todense(), y_train)
+        X_test_new = mod.transform(X_test.todense())
+        X_val_new = mod.transform(X_val.todense())
+        if (log):
+            X_train_new = np.log(X_train_new+1)
+            X_test_new = np.log(X_test_new+1)
+            X_val_new = np.log(X_val_new+1)
+    return X_train_new, X_test_new , X_val_new
+
 def plotAccuracy(fileName):
     data = pd.read_csv(fileName)
     plt.figure(figsize=(9,7))
@@ -97,6 +121,10 @@ y_train = y_train[y_train!=31]
 y_test = y_test[y_test!=31]
 y_val = y_val[y_val!=31]    
 
+tech = 'LinearSVC'
+C=0.5
+X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val,y_train, log=True,tech = tech,C=C)
+
 data_df = pd.DataFrame()
 n_guass =5
 pred_train_array = pd.DataFrame()
@@ -110,13 +138,13 @@ for i in range(1,31):
             ClassPair = str(i)+':'+str(j)                      
             print 'Class Pair: ' +    ClassPair
             
-            X_train_two = np.append(X_train.todense()[y_train==i],X_train.todense()[y_train ==j],axis=0)
+            X_train_two = np.append(X_train_new()[y_train==i],X_train_new[y_train ==j],axis=0)
             y_train_two = np.append(y_train[y_train == i],y_train[y_train == j],axis=0)
         
-            X_test_two = np.append(X_test.todense()[y_test==i],X_test.todense()[y_test ==j],axis=0)
+            X_test_two = np.append(X_test_new[y_test==i],X_test_new[y_test ==j],axis=0)
             y_test_two = np.append(y_test[y_test == i],y_test[y_test == j],axis=0)
             
-            X_val_two = np.append(X_val.todense()[y_val==i],X_val.todense()[y_val ==j],axis=0)
+            X_val_two = np.append(X_val_new[y_val==i],X_val_new[y_val ==j],axis=0)
             y_val_two = np.append(y_val[y_val == i],y_val[y_val == j],axis=0)
             
             acc_train,acc_test,acc_val,pred_train,pred_test,pred_val = pXoverC(X_train_two, y_train_two, X_test_two, y_test_two, X_val_two, y_val_two,X_train,X_test,X_val, n_guass,i,j)
