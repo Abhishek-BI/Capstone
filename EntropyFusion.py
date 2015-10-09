@@ -128,7 +128,7 @@ def checkAccuracy(X,Y):
 
 def featureSelection(X_train,X_test,X_val,y_train,log,tech,C):
     if (tech == 'VarTh'):
-        sel = VarianceThreshold(threshold=0.0001)
+        sel = VarianceThreshold(threshold=0.01)
         X_train_new = sel.fit_transform(X_train.todense())
         X_test_new = sel.transform(X_test.todense())
         X_val_new = sel.transform(X_val.todense())
