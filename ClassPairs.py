@@ -7,14 +7,17 @@ Created on Fri Oct 09 11:30:46 2015
 import pandas as pd 
 import numpy as np
 import os
-path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
-os.chdir(path+'train')    
 import gzip
 from sklearn.datasets import load_svmlight_file
 from sklearn.mixture import GMM
 import matplotlib.pyplot as plt
 from sklearn.svm import LinearSVC
 from sklearn.feature_selection import VarianceThreshold
+
+#path = "C:\\Users\\Vaibhav\\Desktop\\dir_data\\dir_data\\"
+#os.chdir(path+'train')    
+os.chdir("F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\train")
+path = "F:\\Analytics\\ISB Study\\Capstone\\dir_data\\dir_data\\"
 
 def maxCount(z):
     return z.value_counts().idxmax()
@@ -37,11 +40,11 @@ def pXoverC(X_train_two, y_train_two, X_test_two, y_test_two, X_val_two, y_val_t
         temp_val_two = classifier.score(X_val_two)
         s_val_two = np.vstack((s_val_two, temp_val_two))
         
-        temp_train = classifier.score(X_train.todense())
+        temp_train = classifier.score(X_train)
         s_train = np.vstack((s_train, temp_train))
-        temp_test = classifier.score(X_test.todense())
+        temp_test = classifier.score(X_test)
         s_test = np.vstack((s_test, temp_test))
-        temp_val = classifier.score(X_val.todense())
+        temp_val = classifier.score(X_val)
         s_val = np.vstack((s_val, temp_val))
         
     x_train_two = pd.DataFrame(s_train_two.T,columns=['None',i,j])
@@ -126,7 +129,7 @@ C=0.5
 X_train_new, X_test_new , X_val_new = featureSelection(X_train,X_test,X_val,y_train, log=True,tech = tech,C=C)
 
 data_df = pd.DataFrame()
-n_guass =5
+n_guass =2
 pred_train_array = pd.DataFrame()
 pred_test_array = pd.DataFrame()
 pred_val_array = pd.DataFrame()
@@ -138,7 +141,7 @@ for i in range(1,31):
             ClassPair = str(i)+':'+str(j)                      
             print 'Class Pair: ' +    ClassPair
             
-            X_train_two = np.append(X_train_new()[y_train==i],X_train_new[y_train ==j],axis=0)
+            X_train_two = np.append(X_train_new[y_train==i],X_train_new[y_train ==j],axis=0)
             y_train_two = np.append(y_train[y_train == i],y_train[y_train == j],axis=0)
         
             X_test_two = np.append(X_test_new[y_test==i],X_test_new[y_test ==j],axis=0)
@@ -147,7 +150,7 @@ for i in range(1,31):
             X_val_two = np.append(X_val_new[y_val==i],X_val_new[y_val ==j],axis=0)
             y_val_two = np.append(y_val[y_val == i],y_val[y_val == j],axis=0)
             
-            acc_train,acc_test,acc_val,pred_train,pred_test,pred_val = pXoverC(X_train_two, y_train_two, X_test_two, y_test_two, X_val_two, y_val_two,X_train,X_test,X_val, n_guass,i,j)
+            acc_train,acc_test,acc_val,pred_train,pred_test,pred_val = pXoverC(X_train_two, y_train_two, X_test_two, y_test_two, X_val_two, y_val_two,X_train_new,X_test_new,X_val_new, n_guass,i,j)
             
             acc_mat[i-1,j-1] = acc_train
             acc_mat[j-1,i-1] = acc_test
@@ -158,9 +161,9 @@ for i in range(1,31):
             pred_val_array[ClassPair] = pred_val
             
 acc_mat_pd = pd.DataFrame(acc_mat)
-acc_mat_pd.to_csv("Accuracy Matrix_0910.csv",index=False)
+acc_mat_pd.to_csv("Accuracy Matrix_1010.csv",index=False)
 data_df.columns = ['Class Pairs','train Accuracy','test Accuracy','validation Accuracy']
-data_df.to_csv('ClassPair_Acc_0910.csv',index=False)
+data_df.to_csv('ClassPair_Acc_1010.csv',index=False)
 train_vote = pred_train_array.apply(maxCount, axis=1)
 test_vote = pred_test_array.apply(maxCount, axis=1)
 val_vote = pred_val_array.apply(maxCount, axis=1)
@@ -170,7 +173,7 @@ vote_acc_test = np.mean(y_test==test_vote)
 vote_acc_val = np.mean(y_val==val_vote) 
 data = pd.DataFrame([[file,vote_acc_train,vote_acc_test,vote_acc_val]])
 data.columns = ['FileName','Vote train Accuracy','Vote test Accuracy','Vote validation Accuracy']
-data.to_csv('Vote_Accurarcy_0910.csv',index=False)
+data.to_csv('Vote_Accurarcy_1010.csv',index=False)
 
 plotAccuracy('ClassPair_Acc_0910.csv')    
 plotAccuracy('Vote_Accurarcy_0910.csv')
