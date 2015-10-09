@@ -35,9 +35,9 @@ def pXoverC(X_train, y_train, X_test, y_test, X_val, y_val, n_guass):
         temp_val = classifier.score(X_val)
         s_val = np.vstack((s_val, temp_val))
         
-        x_train = pd.DataFrame(s_train.T)
-        x_test = pd.DataFrame(s_test.T)
-        x_val = pd.DataFrame(s_val.T)
+    x_train = pd.DataFrame(s_train.T)
+    x_test = pd.DataFrame(s_test.T)
+    x_val = pd.DataFrame(s_val.T)
     x_train = x_train.drop(x_train.columns[[0]],axis = 1)
     x_test = x_test.drop(x_test.columns[[0]],axis = 1)
     x_val = x_val.drop(x_val.columns[[0]],axis = 1)
