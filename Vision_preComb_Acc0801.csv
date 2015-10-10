@@ -1,6 +1,0 @@
-filename,train Accuracy,test Accuracy,validation Accuracy
-vision_cuboids_histogram.txt.gz,0.434978259369,0.415825870083,0.414623370886
-vision_hist_motion_estimate.txt.gz,0.174546207468,0.172769527264,0.168323392975
-vision_hog_features.txt.gz,0.154503416385,0.148395873484,0.153965098299
-vision_hs_hist_stream.txt.gz,0.274718752157,0.222423761478,0.21813563066
-vision_misc.txt.gz,0.543267306232,0.441106450516,0.432847360283
