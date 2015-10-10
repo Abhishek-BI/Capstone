@@ -1,5 +1,0 @@
-,filename,train Accuracy,test Accuracy,validation Accuracy
-0,audio_mfcc.txt.gz,0.356394506177,0.349733590296,0.345593108019
-1,audio_sai_boxes.txt.gz,0.217157843882,0.216188640744,0.216368455931
-2,audio_spectrogram_stream.txt.gz,0.242915315067,0.236254392926,0.233708857963
-3,audio_volume_stream.txt.gz,0.0911450065567,0.0898991044099,0.0839407996466
