@@ -1,4 +1,0 @@
-filename,train Accuracy,test Accuracy,validation Accuracy
-text_description_unigrams.txt.gz,0.909120342347,0.682363804247,0.693971830986
-text_game_lda_1000.txt.gz,0.965339222859,0.963273634097,0.967196819085
-text_tag_unigrams.txt.gz,0.982023958671,0.93674976916,0.934535211268
